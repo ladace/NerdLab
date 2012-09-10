@@ -1,0 +1,89 @@
+body {
+    background: black;
+    font-family: Helvetica, Arial;
+    font-size: 16px;
+}
+
+#main{
+    width: 620px;
+    margin: 30px auto;
+}
+
+#title-back {
+    background: white;
+
+    height: 80px;
+    /*width: 360px;*/
+}
+
+#title {
+    color: black;
+    font-weight: 900;
+    font-size: 62px;
+    margin-top: -52px;
+    margin-left: 30px;
+}
+
+a {
+    text-decoration: none;
+}
+
+#title2 {
+    color: black;
+    font-weight: 900;
+    font-size: 62px;
+    margin-top: -42px;
+    margin-left: 31px;
+}
+
+#keyboard {
+    position: relative;
+}
+.white-key {
+    background: white;
+    width: 20px;
+    height: 80px;
+    float: left;
+    border: 1px solid black;
+    border-bottom: 3px solid gray;
+    position:absolute;
+}
+
+.black-key {
+    background: black;
+    width: 12px;
+    height: 50px;
+    float: left;
+    position:absolute;
+    z-index: 1;
+}
+
+#warning {
+    margin-top: 100px;
+    padding: 3px 8px;
+    border-radius:5px;
+    background: #444;
+    color: white;
+    display: none;
+}
+
+#warning #hider {
+    float: right;
+    background: #222;
+    border-radius: 3px;
+    padding: 2px 5px;
+    margin-top: 1px;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+#howto {
+    top: 230px;
+    font-size: 14px;
+    position:absolute;
+    color:white;
+    background: #333;
+    padding: 5px;
+    padding-left:10px;
+}
