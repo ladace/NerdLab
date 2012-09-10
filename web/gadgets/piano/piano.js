@@ -1,8 +1,3 @@
-
-var sampleRate = 8000;
-var wavfac = 2 * Math.PI / sampleRate;
-var shiftfac = 2 * Math.PI;
-
 var freq_ratio = Math.exp(Math.log(2)/12);
 var freq_ratio2 = Math.sqrt(2);
 
@@ -14,40 +9,19 @@ var key_map = ['Z', 'S', 'X', 'D', 'C', 'V', 'G', 'B', 'H', 'N', 'J', 'M',
 var md = false;//mouse down boolean
 var key_is_down = [];
 
-//amp_arr is an array whose elements range from -1 to 1
-function wave_generator(amp_arr) {
-    return function(freq, t) {
-        var ret = 0;
-        for (a in amp_arr)
-            ret += amp_arr[a] * 128 * Math.sin(t * wavfac * freq * (parseInt(a) + 1));
-        return ret;
-    }
-}
+var generator = new WaveGenerator([0.7, 0.2, 0.1, 0.05], 1.2);
 
-var generate_wave = wave_generator([0.7, 0.2, 0.1, 0.05]);
+function create_note(freq) {
+    return {
+        audio: generator.createWaveSound(freq),
+        play: function() { this.audio.play(); this.audio.currentTime = this.audio.initialTime;}
+    };
+}
 
 function clamp(level) {
     if (level < 0) return 0;
     if (level > 255) return 255;
     return Math.round(level);
-}
-
-function create_note(freq) {
-    var audio = new Audio();
-    var data = [];
-    var wave = new RIFFWAVE();
-
-    var length = 10000;
-    for (var i = 0; i < length; i++) {
-        var a = generate_wave(freq, i);
-        var fac = (i < 100
-                ? 1 / 100 * i
-                : (length - i) / (length - 100)) * (1 * Math.exp(-Math.sqrt(freq / 440)));
-        data[i] = clamp(128 + fac * a);
-    }
-    wave.Make(data);
-    audio.src = wave.dataURI;
-    return {audio: audio, play: function() { this.audio.play(); this.audio.currentTime = this.audio.initialTime;}};
 }
 
 function create_white_key(pos, note) {
@@ -153,15 +127,6 @@ function create_octave_key(pos, base, n) {
     }
     return notes;
 }
-
-/*function create_tone_editor() {
-  var tc = $('<div style="margin-top:100px; height: 100px; position: relative;"></div>').appendTo('#main');
-  var controller = [];
-  for (var i = 0; i < 20; ++i) {
-  controller = controller.concat($('<div style="width:16px;height: 0px; background:white;float:left;position:absolute"></div>').appendTo(tc).css('left', 20 * i));
-  }
-  controller[0].css('height', 100);
-  }*/
 
 $(document).ready(function() {
     var error = false;
