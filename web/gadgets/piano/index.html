@@ -10,6 +10,32 @@
         <script type="text/javascript" src="../../scripts/riffwave.js"></script>
         <script type="text/javascript" src="WaveGenerator.js"></script>
         <script type="text/javascript" src="piano.js"></script>
+        <script>
+        $(document).ready(function() {
+            var error = false;
+
+            try{
+                piano = new Piano();
+                piano.openKeyControl();
+            }catch (e) {
+                error = true;
+                throw e;
+            }
+
+            //detect the browser
+            (function() {
+                var str = navigator.userAgent.toLowerCase();
+                function contain(name) {
+                    return str.indexOf(name) != -1;
+                }
+                if(error || (!(contain('chrome') || contain('firefox')))) {
+                    var warn = $('#warning').html('Your browser may not support this. Better use Chrome or Firefox instead.').hide().fadeIn(1000);
+                    $('<div id="hider">hide</div>').appendTo(warn).click(function() {
+                        warn.fadeOut(200);
+                    });
+                }
+            })();
+        });
         </script>
     </head>
 
