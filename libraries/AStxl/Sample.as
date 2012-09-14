@@ -36,7 +36,8 @@ import sprites.*;import events.*;
 		public function addTilemap( mapClass:Class, imageClass:Class, xpos:Number, ypos:Number, tileWidth:uint, tileHeight:uint, scrollX:Number, scrollY:Number, hits:Boolean, collideIdx:uint, drawIdx:uint, properties:Array, onAddCallback:Function = null ):FlxTilemap
 		{
 			var map:FlxTilemap = new FlxTilemap;
-			/*map.loadMap( new mapClass, imageClass, tileWidth, tileHeight, FlxTilemap.OFF, 0, drawIdx, collideIdx);
+            var p = Fuck(map);
+			map.loadMap( new mapClass, imageClass, tileWidth, tileHeight, FlxTilemap.OFF, 0, drawIdx, collideIdx);
 			map.x = xpos;
 			map.y = ypos;
 			map.scrollFactor.x = scrollX;
@@ -45,7 +46,7 @@ import sprites.*;import events.*;
 				hitTilemaps.add(map);
 			tilemaps.add(map);
 			if(onAddCallback != null)
-				onAddCallback(map, null, this, scrollX, scrollY, properties);*/
+				onAddCallback(map, null, this, scrollX, scrollY, properties);
 			return map;
 		}
 		public function addSpriteToLayer(obj:FlxSprite, type:Class, layer:FlxGroup, xpos:Number, ypos:Number, angle:Number, scrollX:Number, scrollY:Number, flipped:Boolean = false, scaleX:Number = 1, scaleY:Number = 1, properties:Array = null, onAddCallback:Function = null):FlxSprite

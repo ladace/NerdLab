@@ -53,9 +53,13 @@ end define
 % Class Definition
 
 define classDefinition
-    [modifiers?] 'class [id] '{ [NL]
+    [classHeader] '{ [NL]
         [IN] [memberDefinition*] [EX]
     '} [NL]
+end define
+
+define classHeader
+    [attr modifiers] 'class [id]
 end define
 
 define memberDefinition
@@ -64,13 +68,17 @@ define memberDefinition
 end define
 
 define memberFuncDefinition
-    [modifiers?] 'function [id] ([formalList]) [typeDeclaration?] '{ [NL]
+    [memberFuncHeader] '{ [NL]
         [IN] [statement*] [EX]
     '} [NL] [NL]
 end define
 
+define memberFuncHeader
+    [attr modifiers] 'function [id] ([formalList]) [typeDeclaration?]
+end define
+
 define memberVarDefinition
-    [modifiers?] [staticModifiers?] 'var [id] [typeDeclaration?] [evaluation?] '; [NL]
+    [attr modifiers] [staticModifiers?] 'var [id] [typeDeclaration?] [evaluation?] '; [NL]
 end define
 
 define modifiers
@@ -129,8 +137,9 @@ define evaluation
 end define
 
 define funcCall
-        [id] [attainField*] ([expression,])
-    |   ([funcDefinition]) ([expression,])
+        [id] [attainField*] [arguments]
+    |   ([funcDefinition]) [arguments]
+    |   [newInstance]
 end define
 
 define funcDefinition
@@ -151,13 +160,15 @@ define primary
     |   [arraylit]
     |   [primary]'[ [expression] ']
     |   [funcCall]
-    |   [newInstance]
     |   ( [expression] )
 end define
 
 define newInstance
-        'new [id] ([expression,])
-    |   'new [id]
+    'new [id] [attr arguments]
+end define
+
+define arguments
+    ([expression,])
 end define
 
 define arraylit
