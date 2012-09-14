@@ -22,7 +22,7 @@ class Q
             return x += velocity * Q.elapsed;
         }, varSel);
     }
-    
+
     static public function tag(obj : Object, tag : String) {
     }
 
@@ -53,5 +53,22 @@ class Q
                 --i;
             }
         }
+    }
+
+
+    //value map
+    static public function quadMap(sel) {
+        return {
+            write: function(x) {
+                sel.write(x * x);
+            },
+            read: function() {
+                return Math.sqrt(x);
+            }
+        }
+    }
+    static public function logMap(sel) {
+    }
+    static public function sinFadeMap(sel) {
     }
 }
