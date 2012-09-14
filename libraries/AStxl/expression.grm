@@ -34,6 +34,8 @@ define compop
     |   '!=
     |   '>=
     |   '<=
+    |   '<
+    |   '>
 end define
 
 define evalop
@@ -47,4 +49,9 @@ end define
 define logicop
         '||
     |   '&&
+end define
+
+define selfaddop
+        '++
+    |   '--
 end define
