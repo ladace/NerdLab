@@ -9,6 +9,8 @@ keys
     public protected private
     if else while for
     null
+    % which are not keywords in haxe
+    % is as
 end keys
 
 compounds
@@ -53,9 +55,18 @@ end define
 % Class Definition
 
 define classDefinition
-    [modifiers?] 'class [id] '{ [NL]
+    [classHeader] [classBody]
+end define
+
+define classBody
+    '{ [NL]
         [IN] [memberDefinition*] [EX]
     '} [NL]
+end define
+
+
+define classHeader
+    [modifier?] 'class [id]
 end define
 
 define memberDefinition
@@ -64,22 +75,30 @@ define memberDefinition
 end define
 
 define memberFuncDefinition
-    [modifiers?] 'function [id] ([formalList]) [typeDeclaration?] '{ [NL]
+    [memberFuncHeader] [memberFuncBody]
+end define
+
+define memberFuncBody
+    '{ [NL]
         [IN] [statement*] [EX]
     '} [NL] [NL]
 end define
-
-define memberVarDefinition
-    [modifiers?] [staticModifiers?] 'var [id] [typeDeclaration?] [evaluation?] '; [NL]
+    
+define memberFuncHeader
+    [modifier?] 'function [id] ([formalList]) [typeDeclaration?]
 end define
 
-define modifiers
+define memberVarDefinition
+    [modifier?] [staticModifier?] 'var [id] [typeDeclaration?] [evaluation?] '; [NL]
+end define
+
+define modifier
         'public
     |   'protected
     |   'private
 end define
 
-define staticModifiers
+define staticModifier
     'static
 end define
 
@@ -88,7 +107,7 @@ define typeDeclaration
 end define
 
 define formal
-    [id] [typeDeclaration] [evaluation?]
+    [id] [typeDeclaration?] [evaluation?]
 end define
 
 define formalList
@@ -129,8 +148,9 @@ define evaluation
 end define
 
 define funcCall
-        [id] [attainField*] ([expression,])
-    |   ([funcDefinition]) ([expression,])
+        [id] [attainField*] [arguments]
+    |   ([funcDefinition]) [arguments]
+    |   [newInstance]
 end define
 
 define funcDefinition
@@ -151,13 +171,15 @@ define primary
     |   [arraylit]
     |   [primary]'[ [expression] ']
     |   [funcCall]
-    |   [newInstance]
     |   ( [expression] )
 end define
 
 define newInstance
-        'new [id] ([expression,])
-    |   'new [id]
+    'new [id] [arguments?]
+end define
+
+define arguments
+    ([expression,])
 end define
 
 define arraylit
