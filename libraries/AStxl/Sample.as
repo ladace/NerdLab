@@ -28,7 +28,10 @@ import sprites.*;import events.*;
 		public var shapes:Array = [];	//Array of ShapeData.
 		public static var linkedObjectDictionary:Dictionary = new Dictionary;
 
-		public function BaseLevel() { }
+		public function BaseLevel() {
+            if (a is Fuck) {
+            }
+        }
 
 		// Expects callback function to be callback(newobj:Object,layer:FlxGroup,level:BaseLevel,properties:Array)
 		public function createObjects(onAddCallback:Function = null, parentObject:Object = null):void { }

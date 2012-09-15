@@ -3,6 +3,8 @@ define expression
     |   [expression] [compop] [arithExp]
     |   [expression] [logicop] [arithExp]
     |   [questionExp]
+    |   [expression] 'is [id]
+    |   [expression] 'as [id]
 end define
 
 define arithExp

@@ -9,6 +9,8 @@ keys
     public protected private
     if else while for
     null
+    % which are not keywords in haxe
+    % is as
 end keys
 
 compounds
@@ -53,13 +55,18 @@ end define
 % Class Definition
 
 define classDefinition
-    [classHeader] '{ [NL]
+    [classHeader] [classBody]
+end define
+
+define classBody
+    '{ [NL]
         [IN] [memberDefinition*] [EX]
     '} [NL]
 end define
 
+
 define classHeader
-    [attr modifiers] 'class [id]
+    [modifier?] 'class [id]
 end define
 
 define memberDefinition
@@ -68,26 +75,30 @@ define memberDefinition
 end define
 
 define memberFuncDefinition
-    [memberFuncHeader] '{ [NL]
+    [memberFuncHeader] [memberFuncBody]
+end define
+
+define memberFuncBody
+    '{ [NL]
         [IN] [statement*] [EX]
     '} [NL] [NL]
 end define
-
+    
 define memberFuncHeader
-    [attr modifiers] 'function [id] ([formalList]) [typeDeclaration?]
+    [modifier?] 'function [id] ([formalList]) [typeDeclaration?]
 end define
 
 define memberVarDefinition
-    [attr modifiers] [staticModifiers?] 'var [id] [typeDeclaration?] [evaluation?] '; [NL]
+    [modifier?] [staticModifier?] 'var [id] [typeDeclaration?] [evaluation?] '; [NL]
 end define
 
-define modifiers
+define modifier
         'public
     |   'protected
     |   'private
 end define
 
-define staticModifiers
+define staticModifier
     'static
 end define
 
@@ -96,7 +107,7 @@ define typeDeclaration
 end define
 
 define formal
-    [id] [typeDeclaration] [evaluation?]
+    [id] [typeDeclaration?] [evaluation?]
 end define
 
 define formalList
@@ -164,7 +175,7 @@ define primary
 end define
 
 define newInstance
-    'new [id] [attr arguments]
+    'new [id] [arguments?]
 end define
 
 define arguments
