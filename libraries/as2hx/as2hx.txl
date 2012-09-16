@@ -43,13 +43,13 @@ end rule
 
 rule castFix
     replace [funcCall]
-        ClassName [id] (arg[expression])
+        ClassName [id] (Arg [expression])
     construct first [id]
         ClassName [: 1 1]
     where all
         ClassName [>= "A"] [<= "Z"]
     by
-        cast (arg, ClassName)
+        cast (Arg, ClassName)
 end rule
 
 rule castAsFix
