@@ -1,0 +1,5 @@
+Convert ActionScript to Haxe in order to help to implement cross-platform games.
+This project is mainly written by TXL (www.txl.ca), a language for source transformation.  To make it work, haskell is also used as an auxilliary.
+
+To convert ActionScript to Haxe better, we not only need grammatical transformation, but also transformation based on semantics, which is a little complex for TXL.  The semantic analysis may (indeed, mostly) cross source files.  However, TXL is not designed for multi-files transformation (can't find it in manual).
+Now the pipeline is like this: use the haskell program to run TXL on every single source, and generate some information (such as member variables, classes used).  Then the haskell program continue to analyze the class referenced and generate the import lines (for import xxx.* is not supported in Haxe 2.x).  The haskell program also gathers the semantic information.  Then run TXL again to tranform according to the semantic information.

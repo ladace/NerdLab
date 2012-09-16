@@ -1,42 +1,37 @@
 include "haxeAddons.grm"
 
 rule main
-    replace [program]
+    replace $ [program]
         C [program]
     construct newC [program]
-        C [numberType] [voidType] [classConstructorReplace] [castFix] [castAsFix] [reflectNewInstanceFix] [reflectNewInstanceFixWithoutArgs] [addConstructorSuper] [moveMemberVarInit] [isInstanceFix] [newFix]
+        C [replaceKey 'Number 'Float] [replaceKey 'void 'Void] [replaceKey 'int 'Int] [replaceKey 'uint 'UInt]
+        [classConstructorReplace] [castFix] [castAsFix] [reflectNewInstanceFix] [reflectNewInstanceFixWithoutArgs] [addConstructorSuper] [moveMemberVarInit] [isInstanceFix] [newFix]
+        [generateClassDefFile] [generateTypeUsedFile] [generateImportStarLines]
     where not
         newC [= C]
     by
         newC
 end rule
 
-rule numberType
+rule replaceKey T [id] N [id]
     replace [id]
-        Number
+        T
     by
-        Float
-end rule
-
-rule voidType
-    replace [id]
-        void
-    by
-        Void
+        N
 end rule
 
 rule classConstructorReplace
     replace $ [classDefinition]
         C [classDefinition]
     deconstruct * [classHeader] C
-        _ [modifier] 'class Name [id]
+        _ [modifier?] 'class Name [id]
     by
         C [constructorReplace Name]
 end rule
 
 rule constructorReplace Name [id]
     replace $ [memberFuncHeader]
-        Modifiers [modifier] 'function Name (Formals[formalList])
+        Modifiers [modifier?] 'function Name (Formals[formalList])
     by
         Modifiers 'function 'new (Formals)
 end rule
@@ -83,7 +78,7 @@ end rule
 
 rule addConstructorSuper
     replace [memberFuncDefinition]
-        M [modifier] 'function 'new (F [formalList]) Body [memberFuncBody]
+        M [modifier?] 'function 'new (F [formalList]) Body [memberFuncBody]
     deconstruct not * [statement] Body
         super Args [arguments] ';
     deconstruct Body
@@ -101,21 +96,21 @@ rule moveMemberVarInit
     replace [classBody]
         Body [classBody]
     deconstruct * [memberVarDefinition] Body
-        M [modifier] 'var Name [id] T [typeDeclaration] Eval [evaluation] ';
+        M [modifier?] 'var Name [id] T [typeDeclaration] Eval [evaluation] ';
     by
         Body [removeInit Name] [addInit Name Eval]
 end rule
 
 function removeInit Name [id]
     replace * [memberVarDefinition]
-        M [modifier] 'var Name T [typeDeclaration] Eval [evaluation] ';
+        M [modifier?] 'var Name T [typeDeclaration] Eval [evaluation] ';
     by
         M 'var Name T ';
 end function
 
 function addInit Name [id] Eval [evaluation]
     replace * [memberFuncDefinition]
-        M [modifier] 'function 'new (F [formalList]) '{
+        M [modifier?] 'function 'new (F [formalList]) '{
             Stats [statement*]
         '}
     deconstruct Eval
@@ -139,4 +134,37 @@ rule newFix
         'new C [id]
     by
         'new C ()
+end rule
+
+define varEntry
+    [id] ': [type]
+end define
+
+rule generateClassDefFile
+    replace $ [memberVarDefinition]
+        M [memberVarDefinition]
+    deconstruct M
+        MD [modifier?] 'var Name [id] ': T [type]';
+    construct V [varEntry]
+        Name ': T 
+    construct _ [varEntry]
+        V [fput "class.def"]
+    by
+        M
+end rule
+
+rule generateTypeUsedFile
+    replace $ [type]
+        T [type]
+    by
+        T [fput "types.used"]
+end rule
+
+rule generateImportStarLines
+    replace $ [importDeclaration]
+        'import A [id] B [dotLibField*] C [dotStar] ';
+    construct I [importDeclaration]
+        'import A B C ';
+    by
+        I [fput "import.stars"]
 end rule

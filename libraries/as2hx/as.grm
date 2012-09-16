@@ -103,7 +103,11 @@ define staticModifier
 end define
 
 define typeDeclaration
-    ': [id]
+    ': [type] 
+end define
+
+define type
+    [id]
 end define
 
 define formal
