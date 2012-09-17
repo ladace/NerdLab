@@ -4,7 +4,7 @@ rule main
     replace $ [program]
         C [program]
     construct newC [program]
-        C [replaceKey 'Number 'Float] [replaceKey 'void 'Void] [replaceKey 'int 'Int] [replaceKey 'uint 'UInt]
+        C [replaceKey 'Number 'Float] [replaceKey 'void 'Void] [replaceKey 'int 'Int] [replaceKey 'uint 'UInt] [replaceKey 'Function 'Dynamic]
         [classConstructorReplace] [castFix] [castAsFix] [reflectNewInstanceFix] [reflectNewInstanceFixWithoutArgs] [addConstructorSuper] [moveMemberVarInit] [isInstanceFix] [newFix]
         [generateClassDefFile] [generateTypeUsedFile] [generateImportStarLines]
     where not

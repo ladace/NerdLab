@@ -3,12 +3,37 @@
 module AS2HX where
 import System.Cmd
 import System.Environment
+import System.Directory
 import Data.List
 import HaxeFind
+import Control.Monad
 
 main :: IO ()
 main = do
-    system "txl Sample.as"
+    args <- getArgs
+    fileName <- return $ head args
+    if isSuffixOf ".as" fileName then 
+        translate fileName
+    else
+        do
+            b <- doesDirectoryExist fileName
+            if b then translateInDir fileName
+            else putStrLn "Argument Error!"
+
+translateInDir :: String -> IO ()
+translateInDir dirName = do
+    let prefix = if (last dirName) /= '/' && (last dirName) /= '\\'
+        then dirName ++ "/"
+        else dirName
+    files <- getDirectoryContents dirName >>= filterM (return . (isSuffixOf ".as")) >>= mapM (return . (prefix++))
+    mapM_ translate files
+
+translate :: String -> IO ()
+translate fileName = do
+    system $ "txl " ++ fileName ++ " -o temp.o"
+
+    mapM_ removeFile ["import.stars", "temp.o", "types.used", "import.gen"]
+
     haxePath <- getEnv "HAXEPATH"
     importLines <- readFile "import.stars"
     -- get all classes from the import xxx.* given
@@ -31,10 +56,16 @@ main = do
     putStrLn "Generated import clauses:"
     putStrLn result
     writeFile "import.gen" result
+
+    createDirectory "hxOutput"
+    system $ "txl temp.o as2hxPost.txl -o hxOutput/" ++ (take ((length fileName) - 3) fileName) ++ ".hx"
     return ()
+
+-- Helper
 
 replaceToStr :: Eq a => a -> [a] -> [a] -> [a]
 replaceToStr c str [] = []
 replaceToStr c str (x:xs) = if x == c
     then str ++ replaceToStr c str xs
     else x:replaceToStr c str xs
+
