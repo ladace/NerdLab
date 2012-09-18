@@ -126,7 +126,7 @@ rule isInstanceFix
     replace [expression]
         E [expression] 'is C [id]
     by
-        Std'.is(E, C)
+        Std '. is(E, C)
 end rule
 
 rule newFix

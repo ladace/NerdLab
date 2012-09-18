@@ -15,6 +15,9 @@ end define
 define term
         [primary]
     |   [term] [mulop] [primary]
+    |   '! [term]
+    |   [term] [selfaddop]
+    |   [selfaddop] [term]
 end define
 
 define questionExp
@@ -29,6 +32,7 @@ end define
 define mulop
         '*
     |   '/
+    |   '%
 end define
 
 define compop
@@ -51,6 +55,8 @@ end define
 define logicop
         '||
     |   '&&
+    |   '&
+    |   '|
 end define
 
 define selfaddop

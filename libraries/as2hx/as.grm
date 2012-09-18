@@ -5,10 +5,11 @@ end define
 
 keys
     import package
-    class function var static
+    var const
+    class function static extends override try catch
     public protected private
-    if else while for
-    null
+    if else while for get set
+    null break return case default
     % which are not keywords in haxe
     % is as
 end keys
@@ -25,6 +26,10 @@ comments
     /* */
 end comments
 
+tokens
+    hexnumber "0[Xx][\dABCDEFabcdef]+"
+end tokens
+
 include "expression.grm"
 
 define packageDefinition
@@ -35,6 +40,7 @@ end define
 
 define classDefinitionWithImport
     [importDeclaration*]
+    [metadata*]
     [classDefinition]
 end define
 
@@ -66,12 +72,16 @@ end define
 
 
 define classHeader
-    [modifier?] 'class [id]
+    [modifier?] 'class [id] [classDerivation?]
+end define
+
+define classDerivation
+    'extends [id]
 end define
 
 define memberDefinition
         [memberFuncDefinition]
-    |   [memberVarDefinition]
+    |   [metadata?] [memberVarDefinition]
 end define
 
 define memberFuncDefinition
@@ -85,11 +95,16 @@ define memberFuncBody
 end define
     
 define memberFuncHeader
-    [modifier?] 'function [id] ([formalList]) [typeDeclaration?]
+    [overrideModifier?] [staticModifier?] [modifier?] 'function [getterSetter?] [id] ([formalList]) [typeDeclaration?]
 end define
 
 define memberVarDefinition
-    [modifier?] [staticModifier?] 'var [id] [typeDeclaration?] [evaluation?] '; [NL]
+    [staticModifier?] [modifier?] [varConst] [id] [typeDeclaration?] [evaluation?] '; [NL]
+end define
+
+define varConst
+        'var
+    |   'const
 end define
 
 define modifier
@@ -102,12 +117,21 @@ define staticModifier
     'static
 end define
 
+define overrideModifier
+    'override
+end define
+
+define getterSetter
+        'get
+    |   'set
+end define
 define typeDeclaration
     ': [type] 
 end define
 
 define type
-    [id]
+        [id]
+    |   [id] '. '< [type] '>
 end define
 
 define formal
@@ -122,29 +146,44 @@ end define
 % Statement
 
 define statement
-        [primaryStatement?]'; [NL]
+        [primaryStatement?] '; [NL]
     |   [ifStatement]
     |   [forStatement]
+    |   [whileStatement]
+    |   [switchStatement]
+    |   [funcDefinition]
+    |   { [NL] [IN] [statement*] [EX] } [NL]
+    |   [tryBlock]
 end define
 
 define primaryStatement
         [varDefinition]
-    |   [assignment]
+    |   [assignStatement]
     |   [funcCall]
     |   [returnStatement]
+    |   'break
 end define
 
 define varDefinition
-    'var [id] [typeDeclaration?] [evaluation?]
+    [varConst] [varDefElem,]
+end define
+
+define varDefElem
+    [id] [typeDeclaration?] [evaluation?]
+end define
+
+define assignStatement
+        [leftValue] [assignment*]
+    |   [leftValue] [selfaddop]
+    |   [selfaddop] [leftValue]
 end define
 
 define assignment
-        [leftValue] [evalop] [expression]
-    |   [leftValue] [selfaddop]
+    [evalop] [expression]
 end define
 
 define leftValue
-    [primary] [attainField*]
+    [primary]
 end define
 
 define evaluation
@@ -152,15 +191,15 @@ define evaluation
 end define
 
 define funcCall
-        [id] [attainField*] [arguments]
+        [objectValue] [arguments]
     |   ([funcDefinition]) [arguments]
     |   [newInstance]
 end define
 
 define funcDefinition
-    'function [id?] ([formalList]) '{ [NL]
-        [IN] [statement?] [EX]
-    '} [NL] [NL]
+    'function [id?] ([formalList]) [typeDeclaration?] '{ [NL]
+        [IN] [statement*] [EX]
+    '} [NL]
 end define
 
 define attainField
@@ -169,17 +208,25 @@ end define
 
 define primary
         [number]
+    |   '- [primary]
+    |   [hexnumber]
     |   [stringlit]
-    |   [id] [attainField*]
+    |   [objectValue]
     |   'null
-    |   [arraylit]
-    |   [primary]'[ [expression] ']
+end define
+
+define objectValue
+        [id]
     |   [funcCall]
+    |   [objectValue] [attainField]
+    |   [objectValue] [arguments] % FIXME WTF?  Indeed func call, but if commented it doesn't work.
+    |   [arraylit]
+    |   [objectValue]'[ [expression] ']
     |   ( [expression] )
 end define
 
 define newInstance
-    'new [id] [arguments?]
+    'new [type] [arguments?]
 end define
 
 define arguments
@@ -201,21 +248,54 @@ define ifStatement
 end define
 
 define elseStatement
-        'else '{ [NL]
-            [IN] [statement*] [EX]
-        '} [NL]
-    |   'else [statement]
+    'else [statement]
 end define
 
 define returnStatement
-    'return [expression]
+    'return [expression?]
 end define
 
 define forStatement
         'for ([primaryStatement] '; [expression] '; [primaryStatement] ) [NL]
             [IN] [statement] [EX]
-    |   'for ([primaryStatement] '; [expression] '; [primaryStatement] ) '{ [NL]
-            [IN] [statement*] [EX]
-        '}[NL]
+    |   'for 'each ([varDefinition] 'in [expression])
+            [IN] [statement] [EX]
 end define
 
+define whileStatement
+    'while ([expression]) [NL]
+        [IN] [statement] [EX]
+end define
+
+define switchStatement
+    'switch ([expression]) '{ [NL]
+        [IN] [caseBlock*] [EX]
+    '} [NL]
+end define
+
+define caseBlock
+    'case [primary] ':[NL] [statement*]
+    | 'default ': [NL] [statement*]
+end define
+
+define tryBlock
+    'try '{ [NL]
+        [IN] [statement*] [EX]
+    '} [catchBlock*]
+end define
+
+define catchBlock
+    'catch ([id] [typeDeclaration?]) '{ [NL]
+        [IN] [statement*] [EX]
+    '} [NL]
+end define
+
+% Metadata
+
+define metadata
+    '[ [id] ([metaField,])']
+end define
+
+define metaField
+    [id] '= [stringlit]
+end define

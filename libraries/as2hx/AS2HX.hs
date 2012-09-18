@@ -2,16 +2,18 @@
 -- FIXME the ambiguous class reference isn't detected
 module AS2HX where
 import System.Cmd
+import System.Exit
 import System.Environment
 import System.Directory
 import Data.List
 import HaxeFind
 import Control.Monad
+import Control.Exception
 
 main :: IO ()
 main = do
     args <- getArgs
-    fileName <- return $ head args
+    let fileName = head args
     if isSuffixOf ".as" fileName then 
         translate fileName
     else
@@ -25,17 +27,25 @@ translateInDir dirName = do
     let prefix = if (last dirName) /= '/' && (last dirName) /= '\\'
         then dirName ++ "/"
         else dirName
+
+    putStrLn $ "Translating all *.as in: " ++ prefix
+    putStrLn $ "==============================="
+
     files <- getDirectoryContents dirName >>= filterM (return . (isSuffixOf ".as")) >>= mapM (return . (prefix++))
     mapM_ translate files
 
 translate :: String -> IO ()
 translate fileName = do
-    system $ "txl " ++ fileName ++ " -o temp.o"
+    putStrLn $ "Translating File: " ++ fileName
+    putStrLn $ "+++++++++++++++++++++++++++++++"
 
-    mapM_ removeFile ["import.stars", "temp.o", "types.used", "import.gen"]
+    mapM_ ifRemoveFile ["import.stars", "temp.o", "types.used", "import.gen"]
+    system ("txl " ++ fileName ++ " -o temp.o") >>= checkExitCode
+
 
     haxePath <- getEnv "HAXEPATH"
-    importLines <- readFile "import.stars"
+
+    importLines <- getFromFile "import.stars"
     -- get all classes from the import xxx.* given
     classLists <- mapM (\line -> do
             classes <- case (stripPrefix "import " line) of
@@ -44,7 +54,7 @@ translate fileName = do
             return (line, classes) ) $ lines importLines
 
     -- get types and generate import clauses
-    typeContents <- readFile "types.used"
+    typeContents <- getFromFile "types.used"
     types <- return $ nub $ lines typeContents
     let primaryGenLines = map (\t -> case find (elem t . snd) classLists of
                     Just l -> replaceToStr '*' t $ fst l
@@ -57,9 +67,24 @@ translate fileName = do
     putStrLn result
     writeFile "import.gen" result
 
-    createDirectory "hxOutput"
-    system $ "txl temp.o as2hxPost.txl -o hxOutput/" ++ (take ((length fileName) - 3) fileName) ++ ".hx"
+    ifCreateDirectory "hxOutput"
+    system ("txl temp.o as2hxPost.txl -o hxOutput/" ++ (take ((length fileName) - 3) fileName) ++ ".hx") >>= checkExitCode
     return ()
+
+    where
+        ifRemoveFile filePath = do
+            b <- doesFileExist filePath
+            when b $ removeFile filePath
+        getFromFile filePath = do
+            b <- doesFileExist filePath
+            if b then readFile filePath else return ""
+        ifCreateDirectory dirPath = do
+            b <- doesDirectoryExist dirPath
+            when (not b) $ createDirectory dirPath
+        checkExitCode :: ExitCode -> IO ()
+        checkExitCode exitCode = do
+            when (exitCode /= ExitSuccess) $ throwIO exitCode
+
 
 -- Helper
 
