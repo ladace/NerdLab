@@ -24,15 +24,19 @@ main = do
 
 translateInDir :: String -> IO ()
 translateInDir dirName = do
-    let prefix = if (last dirName) /= '/' && (last dirName) /= '\\'
-        then dirName ++ "/"
-        else dirName
-
-    putStrLn $ "Translating all *.as in: " ++ prefix
+    putStrLn $ "Translating all *.as in: " ++ dirName
     putStrLn $ "==============================="
 
-    files <- getDirectoryContents dirName >>= filterM (return . (isSuffixOf ".as")) >>= mapM (return . (prefix++))
-    mapM_ translate files
+    getFilesInDir dirName >>= mapM_ translate
+
+    where
+        getFilesInDir :: String -> IO [String]
+        getFilesInDir dirName = do
+            files <- getDirectoryContents dirName >>= filterM (return . (isSuffixOf ".as")) >>= mapM (return . (prefix++))
+            dirs <- getDirectoryContents dirName >>= (mapM (return . (prefix++))) . (filter $ \f -> (f /= "." && f /= "..")) >>= filterM doesDirectoryExist
+            return . (files++) . (foldr (++) []) =<< mapM getFilesInDir dirs
+            where
+                prefix = if (last dirName) /= '/' && (last dirName) /= '\\' then dirName ++ "/" else dirName
 
 translate :: String -> IO ()
 translate fileName = do
@@ -67,7 +71,8 @@ translate fileName = do
     putStrLn result
     writeFile "import.gen" result
 
-    ifCreateDirectory "hxOutput"
+    createDirectoryIfMissing True "hxOutput"
+    createDirectoryForFile fileName
     system ("txl temp.o as2hxPost.txl -o hxOutput/" ++ (take ((length fileName) - 3) fileName) ++ ".hx") >>= checkExitCode
     return ()
 
@@ -78,9 +83,14 @@ translate fileName = do
         getFromFile filePath = do
             b <- doesFileExist filePath
             if b then readFile filePath else return ""
-        ifCreateDirectory dirPath = do
-            b <- doesDirectoryExist dirPath
-            when (not b) $ createDirectory dirPath
+        createDirectoryForFile fileName = do
+            when (directory /= "") $ createDirectoryIfMissing True $ "hxOutput/" ++ directory
+            where
+                directory = splitDirectory fileName
+                splitDirectory name
+                    | last name == '/' = name
+                    | otherwise = splitDirectory $ init name
+                    
         checkExitCode :: ExitCode -> IO ()
         checkExitCode exitCode = do
             when (exitCode /= ExitSuccess) $ throwIO exitCode

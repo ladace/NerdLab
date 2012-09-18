@@ -5,8 +5,8 @@ end define
 
 keys
     import package
-    var const
-    class function static extends override try catch
+    var const try catch 
+    interface class function static extends override implements
     public protected private
     if else while for get set
     null break return case default
@@ -72,11 +72,20 @@ end define
 
 
 define classHeader
-    [modifier?] 'class [id] [classDerivation?]
+    [modifier?] [classInterface] [id] [classDerivation?] [interfaceImplementation?]
 end define
 
 define classDerivation
     'extends [id]
+end define
+
+define interfaceImplementation
+    'implements [id]
+end define
+
+define classInterface
+        'class
+    |   'interface
 end define
 
 define memberDefinition
@@ -92,19 +101,25 @@ define memberFuncBody
     '{ [NL]
         [IN] [statement*] [EX]
     '} [NL] [NL]
+    | ';
 end define
     
 define memberFuncHeader
-    [overrideModifier?] [staticModifier?] [modifier?] 'function [getterSetter?] [id] ([formalList]) [typeDeclaration?]
+    [overrideModifier?] [modifiers?] 'function [getterSetter?] [id] ([formalList]) [typeDeclaration?]
 end define
 
 define memberVarDefinition
-    [staticModifier?] [modifier?] [varConst] [id] [typeDeclaration?] [evaluation?] '; [NL]
+    [modifiers?] [varConst] [id] [typeDeclaration?] [evaluation?] '; [NL]
 end define
 
 define varConst
         'var
     |   'const
+end define
+
+define modifiers
+        [staticModifier?] [modifier]
+    |   [modifier] [staticModifier]
 end define
 
 define modifier
@@ -160,6 +175,7 @@ define primaryStatement
         [varDefinition]
     |   [assignStatement]
     |   [funcCall]
+    |   [newInstance]
     |   [returnStatement]
     |   'break
 end define
@@ -191,19 +207,13 @@ define evaluation
 end define
 
 define funcCall
-        [objectValue] [arguments]
-    |   ([funcDefinition]) [arguments]
-    |   [newInstance]
+    [objectValue] [arguments]
 end define
 
 define funcDefinition
     'function [id?] ([formalList]) [typeDeclaration?] '{ [NL]
         [IN] [statement*] [EX]
     '} [NL]
-end define
-
-define attainField
-    '. [id]
 end define
 
 define primary
@@ -218,11 +228,13 @@ end define
 define objectValue
         [id]
     |   [funcCall]
-    |   [objectValue] [attainField]
-    |   [objectValue] [arguments] % FIXME WTF?  Indeed func call, but if commented it doesn't work.
+    |   [newInstance]
+    |   [objectValue] '. [id]
     |   [arraylit]
+    |   [hashlit]
     |   [objectValue]'[ [expression] ']
     |   ( [expression] )
+    |   [funcDefinition]
 end define
 
 define newInstance
@@ -235,6 +247,15 @@ end define
 
 define arraylit
     '[ [expression,] ']
+end define
+
+define hashlit
+    '{ [hashItem,] '}
+end define
+
+define hashItem
+        [stringlit] ': [expression]
+    |   [id] ': [expression]
 end define
 
 % some statement
@@ -258,7 +279,7 @@ end define
 define forStatement
         'for ([primaryStatement] '; [expression] '; [primaryStatement] ) [NL]
             [IN] [statement] [EX]
-    |   'for 'each ([varDefinition] 'in [expression])
+    |   'for 'each (['var?] [id] [typeDeclaration?] 'in [expression])
             [IN] [statement] [EX]
 end define
 

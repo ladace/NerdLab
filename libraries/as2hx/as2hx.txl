@@ -31,7 +31,7 @@ end rule
 
 rule constructorReplace Name [id]
     replace $ [memberFuncHeader]
-        Modifiers [modifier?] 'function Name (Formals[formalList])
+        Modifiers [modifiers?] 'function Name (Formals[formalList])
     by
         Modifiers 'function 'new (Formals)
 end rule
@@ -55,7 +55,7 @@ rule castAsFix
 end rule
 
 rule reflectNewInstanceFix
-    replace [funcCall]
+    replace [primary]
         'new ClassObject [id] (Args [expression,])
     construct first [id]
         ClassObject [: 1 1]
@@ -66,7 +66,7 @@ rule reflectNewInstanceFix
 end rule
 
 rule reflectNewInstanceFixWithoutArgs
-    replace [funcCall]
+    replace [primary]
         'new ClassObject [id]
     construct first [id]
         ClassObject [: 1 1]
@@ -78,7 +78,7 @@ end rule
 
 rule addConstructorSuper
     replace [memberFuncDefinition]
-        M [modifier?] 'function 'new (F [formalList]) Body [memberFuncBody]
+        M [modifiers?] 'function 'new (F [formalList]) Body [memberFuncBody]
     deconstruct not * [statement] Body
         super Args [arguments] ';
     deconstruct Body
@@ -96,21 +96,21 @@ rule moveMemberVarInit
     replace [classBody]
         Body [classBody]
     deconstruct * [memberVarDefinition] Body
-        M [modifier?] 'var Name [id] T [typeDeclaration] Eval [evaluation] ';
+        M [modifiers?] 'var Name [id] T [typeDeclaration] Eval [evaluation] ';
     by
         Body [removeInit Name] [addInit Name Eval]
 end rule
 
 function removeInit Name [id]
     replace * [memberVarDefinition]
-        M [modifier?] 'var Name T [typeDeclaration] Eval [evaluation] ';
+        M [modifiers?] 'var Name T [typeDeclaration] Eval [evaluation] ';
     by
         M 'var Name T ';
 end function
 
 function addInit Name [id] Eval [evaluation]
     replace * [memberFuncDefinition]
-        M [modifier?] 'function 'new (F [formalList]) '{
+        M [modifiers?] 'function 'new (F [formalList]) '{
             Stats [statement*]
         '}
     deconstruct Eval
@@ -144,7 +144,7 @@ rule generateClassDefFile
     replace $ [memberVarDefinition]
         M [memberVarDefinition]
     deconstruct M
-        MD [modifier?] 'var Name [id] ': T [type]';
+        MD [modifiers?] 'var Name [id] ': T [type]';
     construct V [varEntry]
         Name ': T 
     construct _ [varEntry]
