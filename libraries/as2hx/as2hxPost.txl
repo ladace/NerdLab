@@ -19,7 +19,8 @@ end rule
 rule addGeneratedImport
     replace [classDefinitionWithImport]
         I [importDeclaration*]
-        C [classDefinition]
+        Ms [metadata*]
+        Cs [classDefinition*]
     construct R [importDeclaration*]
         I [fget "import.gen"]
     deconstruct R
@@ -27,5 +28,6 @@ rule addGeneratedImport
     by
         'import A B';
         I
-        C
+        Ms
+        Cs
 end rule

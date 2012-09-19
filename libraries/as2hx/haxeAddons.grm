@@ -1,0 +1,12 @@
+compounds
+    @:
+end compounds
+
+redefine metadata
+        ...
+    |   '@:[id] [arguments?]
+end redefine
+
+redefine classDefinition
+    [metadata?] [classHeader] [classBody]
+end redefine

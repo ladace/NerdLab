@@ -6,6 +6,7 @@ rule main
     construct newC [program]
         C [replaceKey 'Number 'Float] [replaceKey 'void 'Void] [replaceKey 'int 'Int] [replaceKey 'uint 'UInt] [replaceKey 'Function 'Dynamic]
         [classConstructorReplace] [castFix] [castAsFix] [reflectNewInstanceFix] [reflectNewInstanceFixWithoutArgs] [addConstructorSuper] [moveMemberVarInit] [isInstanceFix] [newFix]
+        [replaceSetter] [replaceGetter] [replaceEmbed]
         [generateClassDefFile] [generateTypeUsedFile] [generateImportStarLines]
     where not
         newC [= C]
@@ -24,7 +25,7 @@ rule classConstructorReplace
     replace $ [classDefinition]
         C [classDefinition]
     deconstruct * [classHeader] C
-        _ [modifier?] 'class Name [id]
+        _ [modifier?] CK [classInterface] Name [id] D [classDerivation?] I [interfaceImplementation?]
     by
         C [constructorReplace Name]
 end rule
@@ -168,3 +169,53 @@ rule generateImportStarLines
     by
         I [fput "import.stars"]
 end rule
+
+rule replaceSetter
+    replace [memberFuncHeader]
+        O [overrideModifier?] M [modifiers?] 'function 'set Name [id] (F[formalList])
+    construct newName [id]
+        Name [+ "Set"]
+    by
+        '@:setter(Name) O M 'function newName (F)
+end rule
+
+rule replaceGetter
+    replace [memberFuncHeader]
+        O [overrideModifier?] M [modifiers?] 'function 'get Name [id] (F[formalList])
+    construct newName [id]
+        Name [+ "Get"]
+    by
+        '@:getter(Name) O M 'function newName (F)
+end rule
+
+rule replaceEmbed
+    replace [classDefinition*]
+        Cs [classDefinition*]
+    deconstruct * [classDefinition] Cs
+        C [classDefinition]
+    deconstruct * [memberVarDefinition] C
+        '[Embed(source '= Src [stringlit])'] M [modifiers?] V [varConst] Name [id] T [typeDeclaration?] ';
+    construct E [id]
+        'E
+    construct newName [id]
+        E [+ Name] [!]
+    by
+        '@:file(Src) 'class newName 'extends flash'.utils'.ByteArray '{'}
+        Cs [doReplaceEmbed Name newName C]
+end rule
+
+rule doReplaceEmbed Name [id] newName [id] C [classDefinition]
+    replace $ [classDefinition] 
+        C
+    by
+        C [removeMemberVar Name] [replaceKey Name newName]
+end rule
+
+rule removeMemberVar Name [id]
+    replace [memberDefinition*]
+        MD [metadata] M [modifiers?] V [varConst] Name T [typeDeclaration?] ';
+        Defs [memberDefinition*]
+    by
+        Defs
+end rule
+        

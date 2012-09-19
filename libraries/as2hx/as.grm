@@ -41,7 +41,7 @@ end define
 define classDefinitionWithImport
     [importDeclaration*]
     [metadata*]
-    [classDefinition]
+    [classDefinition*]
 end define
 
 % Import Declaration
@@ -76,7 +76,7 @@ define classHeader
 end define
 
 define classDerivation
-    'extends [id]
+    'extends [type]
 end define
 
 define interfaceImplementation
@@ -90,7 +90,7 @@ end define
 
 define memberDefinition
         [memberFuncDefinition]
-    |   [metadata?] [memberVarDefinition]
+    |   [memberVarDefinition]
 end define
 
 define memberFuncDefinition
@@ -105,11 +105,11 @@ define memberFuncBody
 end define
     
 define memberFuncHeader
-    [overrideModifier?] [modifiers?] 'function [getterSetter?] [id] ([formalList]) [typeDeclaration?]
+    [metadata?] [overrideModifier?] [modifiers?] 'function [getterSetter?] [id] ([formalList]) [typeDeclaration?]
 end define
 
 define memberVarDefinition
-    [modifiers?] [varConst] [id] [typeDeclaration?] [evaluation?] '; [NL]
+    [metadata?] [modifiers?] [varConst] [id] [typeDeclaration?] [evaluation?] '; [NL]
 end define
 
 define varConst
@@ -145,8 +145,8 @@ define typeDeclaration
 end define
 
 define type
-        [id]
-    |   [id] '. '< [type] '>
+        [id] [dotLibField*]
+    |   [id] [dotLibField*] '. '< [type] '>
 end define
 
 define formal
