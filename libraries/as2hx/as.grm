@@ -146,6 +146,7 @@ end define
 
 define type
         [id] [dotLibField*]
+    |   [id] [dotLibField*] '< [type] '>
     |   [id] [dotLibField*] '. '< [type] '>
 end define
 
@@ -232,6 +233,7 @@ define objectValue
     |   [objectValue] '. [id]
     |   [arraylit]
     |   [hashlit]
+    |   [type]
     |   [objectValue]'[ [expression] ']
     |   ( [expression] )
     |   [funcDefinition]
@@ -242,7 +244,7 @@ define newInstance
 end define
 
 define arguments
-    ([expression,])
+    '( [expression,] ')
 end define
 
 define arraylit

@@ -1,10 +1,15 @@
 define expression
         [arithExp]
-    |   [expression] [compop] [arithExp]
-    |   [expression] [logicop] [arithExp]
+    |   [compExp]
+    |   [expression] [logicop] [compExp]
     |   [questionExp]
     |   [expression] 'is [id]
     |   [expression] 'as [id]
+end define
+
+define compExp
+        [arithExp] [compop] [arithExp]
+    |   [arithExp]
 end define
 
 define arithExp

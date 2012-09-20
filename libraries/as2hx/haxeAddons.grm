@@ -10,3 +10,14 @@ end redefine
 redefine classDefinition
     [metadata?] [classHeader] [classBody]
 end redefine
+
+redefine program
+        ...
+    |   [haxePackageDefinition?]
+        [classDefinitionWithImport]
+end redefine
+
+define haxePackageDefinition
+    package [id] [dotLibField*] ';
+end define
+

@@ -4,7 +4,9 @@ rule main
     replace $ [program]
         C [program]
     construct newC [program]
-        C [replaceKey 'Number 'Float] [replaceKey 'void 'Void] [replaceKey 'int 'Int] [replaceKey 'uint 'UInt] [replaceKey 'Function 'Dynamic]
+        C [replaceId 'Number 'Float] [replaceId 'void 'Void] [replaceId 'int 'Int] [replaceId 'uint 'UInt] [replaceId 'Function 'Dynamic] [replaceId 'Class 'Dynamic] [replaceId 'Boolean 'Bool]
+        [replaceConst] [replaceVector]
+        [replacePackageDefinition] [replacePackageDefinition2] [removeClassModifier] [removeOverriderModifier]
         [classConstructorReplace] [castFix] [castAsFix] [reflectNewInstanceFix] [reflectNewInstanceFixWithoutArgs] [addConstructorSuper] [moveMemberVarInit] [isInstanceFix] [newFix]
         [replaceSetter] [replaceGetter] [replaceEmbed]
         [generateClassDefFile] [generateTypeUsedFile] [generateImportStarLines]
@@ -14,11 +16,18 @@ rule main
         newC
 end rule
 
-rule replaceKey T [id] N [id]
+rule replaceId T [id] N [id]
     replace [id]
         T
     by
         N
+end rule
+
+rule replaceConst
+    replace [varConst]
+        'const
+    by
+        'var
 end rule
 
 rule classConstructorReplace
@@ -132,7 +141,7 @@ end rule
 
 rule newFix
     replace [newInstance]
-        'new C [id]
+        'new C [type]
     by
         'new C ()
 end rule
@@ -172,20 +181,20 @@ end rule
 
 rule replaceSetter
     replace [memberFuncHeader]
-        O [overrideModifier?] M [modifiers?] 'function 'set Name [id] (F[formalList])
+        O [overrideModifier?] M [modifiers?] 'function 'set Name [id] (F[formalList]) T [typeDeclaration?]
     construct newName [id]
         Name [+ "Set"]
     by
-        '@:setter(Name) O M 'function newName (F)
+        '@:setter(Name) O M 'function newName (F) T
 end rule
 
 rule replaceGetter
     replace [memberFuncHeader]
-        O [overrideModifier?] M [modifiers?] 'function 'get Name [id] (F[formalList])
+        O [overrideModifier?] M [modifiers?] 'function 'get Name [id] (F[formalList]) T [typeDeclaration?]
     construct newName [id]
         Name [+ "Get"]
     by
-        '@:getter(Name) O M 'function newName (F)
+        '@:getter(Name) O M 'function newName (F) T
 end rule
 
 rule replaceEmbed
@@ -208,7 +217,7 @@ rule doReplaceEmbed Name [id] newName [id] C [classDefinition]
     replace $ [classDefinition] 
         C
     by
-        C [removeMemberVar Name] [replaceKey Name newName]
+        C [removeMemberVar Name] [replaceId Name newName]
 end rule
 
 rule removeMemberVar Name [id]
@@ -219,3 +228,42 @@ rule removeMemberVar Name [id]
         Defs
 end rule
         
+rule replacePackageDefinition
+    replace $ [program]
+        package P [id] '{
+            C [classDefinitionWithImport]
+        '}
+    by
+        package P ';
+        C
+end rule
+
+rule replacePackageDefinition2
+    replace $ [program]
+        package '{
+            C [classDefinitionWithImport]
+        '}
+    by
+        C
+end rule
+
+rule removeClassModifier
+    replace [classHeader]
+        M [modifier] C [classInterface] Name [id] D [classDerivation?] I [interfaceImplementation?]
+    by
+        C Name D I
+end rule
+
+rule removeOverriderModifier
+    replace [memberFuncHeader]
+        MD [metadata?] O [overrideModifier] M [modifiers] 'function GS [getterSetter?] Name [id] (F [formalList]) T [typeDeclaration?]
+    by
+        MD O 'function GS Name (F) T
+end rule
+
+rule replaceVector
+    replace [type]
+        'Vector '. '< T [type] '>
+    by
+        Array '< T '>
+end rule
