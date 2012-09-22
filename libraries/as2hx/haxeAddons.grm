@@ -1,5 +1,5 @@
 compounds
-    @:
+    @: ...
 end compounds
 
 redefine metadata
@@ -18,6 +18,11 @@ redefine program
 end redefine
 
 define haxePackageDefinition
-    package [id] [dotLibField*] ';
+    package [id] [dotLibField*] '; [NL]
 end define
 
+redefine forStatement
+        ...
+    |   for ([id] 'in [expression] '... [expression]) [NL]
+            [IN] [statement] [EX]
+end redefine

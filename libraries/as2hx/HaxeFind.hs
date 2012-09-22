@@ -15,6 +15,10 @@ findClasses haxePath iml = do
     b <- findClassesInLibs haxePath iml
     return $ a ++ b
 
+findClassesLocal :: String -> String -> IO [String]
+findClassesLocal path iml = do
+    findNextFieldEx ".as" path $ split '.' iml
+
 findClassesInStd :: String -> String -> IO [String]
 findClassesInStd haxePath iml = do
     stdResult <- findNextField (haxePath ++ "std") $ split '.' iml
@@ -36,12 +40,17 @@ findClassesInLib haxePath iml libName = do
         libPath = haxePath ++ "lib\\" ++ libName
 
 findNextField :: String -> [String] -> IO [String]
-findNextField path ["*;"] = do
+findNextField = findNextFieldEx ".hx"
+
+findNextFieldEx :: String -> String -> [String] -> IO [String]
+findNextFieldEx ex path [] = do error "Invalid import clause."
+findNextFieldEx ex path ["*;"] = do
     b <- doesDirectoryExist path
     if b
-    then getDirectoryContents path >>= filterM (return . isSuffixOf ".hx") >>= mapM (return . stripSuffix ".hx")
+    then getDirectoryContents path >>= filterM (return . isSuffixOf ex) >>= mapM (return . stripSuffix ex)
     else return []
-findNextField path iml = findNextField (path ++ '\\':head iml) $ tail iml
+findNextFieldEx ex path iml = findNextFieldEx ex (path ++ '\\':head iml) $ tail iml
+
         
 
 -- Helper
@@ -65,3 +74,23 @@ replace c newC (x:xs) =
         newC:replace c newC xs
     else
         x:replace c newC xs
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

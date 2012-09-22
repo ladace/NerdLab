@@ -4,9 +4,9 @@ rule main
     replace $ [program]
         C [program]
     construct newC [program]
-        C [replaceId 'Number 'Float] [replaceId 'void 'Void] [replaceId 'int 'Int] [replaceId 'uint 'UInt] [replaceId 'Function 'Dynamic] [replaceId 'Class 'Dynamic] [replaceId 'Boolean 'Bool]
-        [replaceConst] [replaceVector]
-        [replacePackageDefinition] [replacePackageDefinition2] [removeClassModifier] [removeOverriderModifier]
+        C [replaceId 'Number 'Float] [replaceId 'void 'Void] [replaceId 'int 'Int] [replaceId 'uint 'UInt] [replaceId 'Function 'Dynamic] [replaceId 'Class 'Dynamic] [replaceId 'Boolean 'Bool] [replaceId 'Object 'Dynamic]
+        [replaceConst] [replaceProtected] [replaceVector] [fixArray]
+        [replacePackageDefinition] [replacePackageDefinition2] [removeClassModifier] [removeOverriderModifier] [replaceForLoop1]
         [classConstructorReplace] [castFix] [castAsFix] [reflectNewInstanceFix] [reflectNewInstanceFixWithoutArgs] [addConstructorSuper] [moveMemberVarInit] [isInstanceFix] [newFix]
         [replaceSetter] [replaceGetter] [replaceEmbed]
         [generateClassDefFile] [generateTypeUsedFile] [generateImportStarLines]
@@ -28,6 +28,13 @@ rule replaceConst
         'const
     by
         'var
+end rule
+
+rule replaceProtected
+    replace [modifier]
+        'protected
+    by
+        'private
 end rule
 
 rule classConstructorReplace
@@ -203,13 +210,15 @@ rule replaceEmbed
     deconstruct * [classDefinition] Cs
         C [classDefinition]
     deconstruct * [memberVarDefinition] C
-        '[Embed(source '= Src [stringlit])'] M [modifiers?] V [varConst] Name [id] T [typeDeclaration?] ';
+        '[Embed(Fields [metaField,])'] M [modifiers?] V [varConst] Name [id] T [typeDeclaration?] ';
+    deconstruct * [metaField] Fields
+        source '= Src [stringlit]
     construct E [id]
         'E
     construct newName [id]
         E [+ Name] [!]
     by
-        '@:file(Src) 'class newName 'extends flash'.utils'.ByteArray '{'}
+        C [genNewEmb newName Src] [genNewEmbBitmap newName Src] [genNewEmbSound newName Src]
         Cs [doReplaceEmbed Name newName C]
 end rule
 
@@ -218,6 +227,43 @@ rule doReplaceEmbed Name [id] newName [id] C [classDefinition]
         C
     by
         C [removeMemberVar Name] [replaceId Name newName]
+end rule
+
+rule genNewEmb Name [id] Src [stringlit]
+    replace $ [classDefinition]
+        _ [classDefinition]
+    by
+        '@:file(Src) 'private 'class Name 'extends flash'.utils'.ByteArray '{'}
+end rule
+
+rule genNewEmbBitmap Name [id] Src [stringlit]
+    replace $ [classDefinition]
+        _ [classDefinition]
+    construct L [number]
+        _ [# Src]
+    construct I [number]
+        L [- 3]
+    construct S [stringlit]
+        Src [: I L]
+    where
+        S [= ".png"] [= ".jpg"] [= "jpeg"]
+    by
+        '@:bitmap(Src) 'private 'class Name 'extends flash'.display'.BitmapData '{'}
+end rule
+
+rule genNewEmbSound Name [id] Src [stringlit]
+    replace $ [classDefinition]
+        _ [classDefinition]
+    construct L [number]
+        _ [# Src]
+    construct I [number]
+        L [- 3]
+    construct S [stringlit]
+        Src [: I L]
+    where
+        S [= ".wav"] [= ".mp3"]
+    by
+        '@:bitmap(Src) 'private 'class Name 'extends flash'.media'.Sound '{'}
 end rule
 
 rule removeMemberVar Name [id]
@@ -249,7 +295,7 @@ end rule
 
 rule removeClassModifier
     replace [classHeader]
-        M [modifier] C [classInterface] Name [id] D [classDerivation?] I [interfaceImplementation?]
+        'public C [classInterface] Name [id] D [classDerivation?] I [interfaceImplementation?]
     by
         C Name D I
 end rule
@@ -261,9 +307,25 @@ rule removeOverriderModifier
         MD O 'function GS Name (F) T
 end rule
 
+rule replaceForLoop1
+    replace [forStatement]
+        'for (X [id] '= E1 [expression]'; X '< E2 [arithExp] '; X '++)
+            S [statement]
+    by
+        'for (X 'in E1 '... E2)
+            S
+end rule
+
 rule replaceVector
     replace [type]
         'Vector '. '< T [type] '>
     by
         Array '< T '>
+end rule
+
+rule fixArray
+    replace [type]
+        'Array
+    by
+        Array '< Dynamic '>
 end rule

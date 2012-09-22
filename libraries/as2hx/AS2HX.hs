@@ -9,6 +9,8 @@ import Data.List
 import HaxeFind
 import Control.Monad
 import Control.Exception
+import Control.Applicative
+import Control.Monad.Instances
 
 main :: IO ()
 main = do
@@ -34,7 +36,7 @@ translateInDir dirName = do
         getFilesInDir dirName = do
             files <- getDirectoryContents dirName >>= filterM (return . (isSuffixOf ".as")) >>= mapM (return . (prefix++))
             dirs <- getDirectoryContents dirName >>= (mapM (return . (prefix++))) . (filter $ \f -> (f /= "." && f /= "..")) >>= filterM doesDirectoryExist
-            return . (files++) . (foldr (++) []) =<< mapM getFilesInDir dirs
+            return . (files++) . concat =<< mapM getFilesInDir dirs
             where
                 prefix = if (last dirName) /= '/' && (last dirName) /= '\\' then dirName ++ "/" else dirName
 
@@ -53,7 +55,7 @@ translate fileName = do
     -- get all classes from the import xxx.* given
     classLists <- mapM (\line -> do
             classes <- case (stripPrefix "import " line) of
-                Just l -> findClasses haxePath l
+                Just l -> liftM2 (++) (findClassesLocal fileDir l) $ findClasses haxePath l 
                 Nothing -> return []
             return (line, classes) ) $ lines importLines
 
@@ -77,6 +79,7 @@ translate fileName = do
     return ()
 
     where
+        fileDir = fst $ splitAt (last $ findIndices ((||) <$> (=='/') <*> (=='\\')) fileName) fileName
         ifRemoveFile filePath = do
             b <- doesFileExist filePath
             when b $ removeFile filePath
