@@ -9,14 +9,14 @@ To convert AS3 into Haxe completely, the next phase is adding semantic analysis 
 #Features
 <ul>
 <li>Transformation based on grammar has been basically completed. </li>
-<li>Expand the "import xxx.\*;" declaration automatically.  However, some import may be missed, and should be added manually.</li>
+<li>Expand the "import xxx.*;" declaration automatically.  However, some import may be missed, and should be added manually.</li>
 </ul>
 
 #Notice
 
 <ul>
 <li>The input AS3 code is required to have ';' following each statement.  If not, the transformation will fail. </li>
-<li>The *Function* and *Class* type are translated into *Dynamic* in Haxe.</li>
+<li>The <b>Function</b> and <b>Class</b> type are translated into <b>Dynamic</b> in Haxe.</li>
 </ul>
 
 #Build
