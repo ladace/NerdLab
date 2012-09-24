@@ -21,7 +21,7 @@ To convert AS3 into Haxe completely, the next phase is adding semantic analysis 
 
 #Build
 <ul>
-<li>Install TXL (http://www.txl.ca) and Haskell(htp://www.haskell.org).</li>
+<li>Install TXL (http://www.txl.ca) and Haskell(http://www.haskell.org).</li>
 <li>Run the build.sh or build.bat.</li>
 </ul>
 
