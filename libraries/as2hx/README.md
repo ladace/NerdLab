@@ -29,6 +29,7 @@ Windows users can use the binary version "as2hx.exe" directly.
 
 #Usage
 as2hx [file|directory]
+
 The output code will be placed in the folder "hxOutput/".
 If a directory is specified, all AS files under the directory will be processed recursively.
 
