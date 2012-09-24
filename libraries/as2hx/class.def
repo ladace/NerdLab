@@ -1,8 +1,0 @@
-masterLayer : FlxGroup
-hitTilemaps : FlxGroup
-tilemaps : FlxGroup
-boundsMin : FlxPoint
-boundsMax : FlxPoint
-bgColor : UInt
-paths : Array
-shapes : Array
