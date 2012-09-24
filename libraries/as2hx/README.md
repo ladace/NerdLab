@@ -1,6 +1,6 @@
 About
 =
-A tool used to translate AS3 code into Haxe code, written in TXL (http://www.txl.ca) and Haskell.
+A tool used to translate AS3 code into Haxe code, written in TXL (http://www.txl.ca) and Haskell.  Developed by Ladace (http://godhatesnerds.net)
 
 This is NOT a complete converter, but it can reduce much work you have to do when translating AS3 code into Haxe.
 
