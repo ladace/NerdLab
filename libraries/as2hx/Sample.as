@@ -16,7 +16,7 @@ import sprites.*;import events.*;
 		// This group contains all the tilemaps.
 		public var tilemaps:FlxGroup = new FlxGroup;
 
-		public static var boundsMinX:int;
+		[Embed(source="haha.wav")] public static var boundsMinX:int;
 		public static var boundsMinY:int;
 		public static var boundsMaxX:int;
 		public static var boundsMaxY:int;
