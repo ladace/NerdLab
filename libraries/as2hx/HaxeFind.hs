@@ -75,22 +75,3 @@ replace c newC (x:xs) =
     else
         x:replace c newC xs
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
